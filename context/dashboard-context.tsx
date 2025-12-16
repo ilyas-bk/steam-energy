@@ -45,7 +45,26 @@ export interface DashboardContextType {
   setPrimaryAlertEmail: (email: string) => void
 }
 
-const DashboardContext = createContext<DashboardContextType | undefined>(undefined)
+// Safe default context for SSR/prerender (no-ops)
+const defaultContext: DashboardContextType = {
+  anomalyActive: "none",
+  setAnomalyActive: () => {},
+  notifications: [],
+  addNotification: () => {},
+  dismissNotification: () => {},
+  dataMultiplier: 1,
+  reports: [],
+  addReport: () => {},
+  removeReport: () => {},
+  alertEmails: [],
+  addAlertEmail: () => {},
+  removeAlertEmail: () => {},
+  sendAlertEmail: async () => {},
+  setPrimaryAlertEmail: () => {},
+}
+
+// Initialize with safe defaults instead of undefined
+const DashboardContext = createContext<DashboardContextType>(defaultContext)
 
 export function DashboardProvider({ children }: { children: ReactNode }) {
   const [anomalyActive, setAnomalyState] = useState<"none" | "uncomfortable-steam" | "water-leak">("none")
@@ -321,9 +340,6 @@ Détails:
 }
 
 export function useDashboard() {
-  const context = React.useContext(DashboardContext)
-  if (!context) {
-    throw new Error("useDashboard must be used within DashboardProvider")
-  }
-  return context
+  // Return whatever context is available (safe defaults during SSR)
+  return React.useContext(DashboardContext)
 }

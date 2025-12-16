@@ -29,6 +29,8 @@ interface SchemaData {
   }
 }
 
+type StatutType = "EXPORTATION" | "IMPORTATION" | "ÉQUILIBRE" | null
+
 export function ProcessSchema() {
   const { setAnomalyActive } = useDashboard()
   const [data, setData] = useState<SchemaData>({
@@ -50,8 +52,8 @@ export function ProcessSchema() {
 
   const [anomalyMode, setAnomalyMode] = useState<"none" | "uncomfortable-steam" | "water-leak">("none")
 
-  // Force statut: set to "EXPORTATION", "IMPORTATION" or null to keep automatic mode
-  const FORCE_STATUT: "EXPORTATION" | "IMPORTATION" | null = "IMPORTATION"
+  // Force statut: "EXPORTATION" | "IMPORTATION" | null (default: null to avoid TS literal narrowing)
+  const FORCE_STATUT: StatutType = null
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -59,14 +61,14 @@ export function ProcessSchema() {
         const newPuissance = prev.centrale.puissance + (Math.random() - 0.5) * 0.5
         const energieNecessaire = prev.capU.puissance + prev.capV.puissance + prev.capW.puissance + 4.2
         let bilanNet = newPuissance - energieNecessaire
-        let statut = bilanNet > 0 ? "EXPORTATION" : bilanNet < -2 ? "IMPORTATION" : "ÉQUILIBRE"
+        let statut: StatutType = bilanNet > 0 ? "EXPORTATION" : bilanNet < -2 ? "IMPORTATION" : "ÉQUILIBRE"
 
         // Override statut if forcing mode
-        if (FORCE_STATUT === "EXPORTATION") {
+        if (FORCE_STATUT !== null && FORCE_STATUT === "EXPORTATION") {
           statut = "EXPORTATION"
           // Ensure positive export with a minimum visibility value
           bilanNet = Math.max(bilanNet, 0.5)
-        } else if (FORCE_STATUT === "IMPORTATION") {
+        } else if (FORCE_STATUT !== null && FORCE_STATUT === "IMPORTATION") {
           statut = "IMPORTATION"
           // Ensure positive import with a minimum visibility value
           bilanNet = -Math.max(Math.abs(bilanNet), 0.5)
@@ -85,7 +87,7 @@ export function ProcessSchema() {
             energieExportee: bilanNet > 0 ? bilanNet : 0,
             energieImportee: bilanNet < 0 ? Math.abs(bilanNet) : 0,
             bilanNet,
-            statut,
+            statut: statut || "ÉQUILIBRE",
           },
         }
 
