@@ -391,15 +391,14 @@ export function AlertsPanel() {
   return (
     <div className="space-y-6">
       {/* Header with Action Buttons */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Alertes Système</h2>
-        <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 className="text-2xl font-bold text-white">Alertes</h2>
+        <div className="flex flex-wrap gap-3">
           <Button
             size="sm"
             className="bg-slate-500/20 text-slate-400 border border-slate-500/50 hover:bg-slate-500/30"
           >
-            <Settings className="w-4 h-4 mr-2" />
-            Configurer Alertes
+            <Settings className="w-4 h-4 mr-2" /> Configurer
           </Button>
           <Button
             size="sm"
@@ -413,7 +412,7 @@ export function AlertsPanel() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-red-900/20 to-slate-900 border-2 border-red-500/30 shadow-lg shadow-red-500/10">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
@@ -443,7 +442,7 @@ export function AlertsPanel() {
               <Info className="w-5 h-5 text-slate-400" />
             </div>
             <p className="text-4xl font-bold text-slate-300">{infoCount}</p>
-            <p className="text-xs text-slate-400 mt-2">Informationnel</p>
+            <p className="text-xs text-slate-400 mt-2">Info</p>
           </CardContent>
         </Card>
 
@@ -592,12 +591,18 @@ export function AlertsPanel() {
             <CardContent className="p-12 text-center">
               <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">Aucune alerte</h3>
-              <p className="text-slate-400">Aucune alerte ne correspond aux critères de filtrage sélectionnés</p>
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-400 mt-1" />
+                <div>
+                  <p className="text-amber-400 font-semibold mb-1">Aucune alerte</p>
+                  <p className="text-sm text-amber-300">Aucun résultat pour ce filtre</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ) : (
           filteredAlerts.map((alert) => (
-            <Card key={alert.id} className={`border transition-all duration-300 ${getAlertStyle(alert.level, alert.acknowledged)}`}>
+            <Card key={alert.id} className={`border transition-all duration-300 ${getAlertStyle(alert.level, alert.acknowledged)} min-w-0`}>
               <CardContent className="p-6">
                 {/* Header Row */}
                 <div className="flex items-start justify-between mb-4">
@@ -663,7 +668,7 @@ export function AlertsPanel() {
                   <div className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30 rounded-lg p-4 mb-4 ml-8">
                     <div className="flex items-center gap-2 mb-3">
                       <Brain className="w-5 h-5 text-purple-400" />
-                      <h5 className="font-semibold text-purple-300">Suggestions IA pour Résoudre</h5>
+                      <h5 className="font-semibold text-purple-300">Suggestions IA</h5>
                     </div>
                     <div className="space-y-3">
                       {alert.aiSuggestions.map((suggestion, idx) => (

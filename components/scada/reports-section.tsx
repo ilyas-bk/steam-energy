@@ -102,16 +102,14 @@ export function ReportsSection() {
             key={index}
             className="relative bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 hover:border-slate-600/70 transition-all hover:bg-slate-900/70"
           >
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-w-0">
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 <FileText className="w-6 h-6 text-cyan-400 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-semibold text-white truncate">{report.title}</h3>
-                  <div className="flex items-center gap-3 mt-1 flex-wrap">
-                    <span className={`text-xs px-2 py-1 rounded-md border font-medium ${report.categoryColor}`}>
-                      {report.category}
-                    </span>
-                    <span className="text-sm text-slate-400">{report.date} • {report.size}</span>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap text-xs text-slate-400">
+                    <span className={`px-2 py-1 rounded-md border font-medium ${report.categoryColor}`}>{report.category}</span>
+                    <span>{report.date} • {report.size}</span>
                   </div>
                 </div>
               </div>

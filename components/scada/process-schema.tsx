@@ -78,7 +78,11 @@ export function ProcessSchema() {
           capU: { ...prev.capU, charge: prev.capU.charge + (Math.random() - 0.5) * 2 },
           capV: { ...prev.capV, charge: prev.capV.charge + (Math.random() - 0.5) * 2 },
           capW: { ...prev.capW, charge: prev.capW.charge + (Math.random() - 0.5) * 2 },
-          centrale: { ...prev.centrale, puissance: newPuissance },
+          centrale: {
+            ...prev.centrale,
+            puissance: newPuissance,
+            temp: Number(prev.centrale.temp.toFixed(2)), // clamp to 2 decimals
+          },
           sulfurique: { ...prev.sulfurique, temp: prev.sulfurique.temp + (Math.random() - 0.5) * 1 },
           ted: { ...prev.ted, debitEntree: prev.ted.debitEntree + (Math.random() - 0.5) * 10 },
           echangeElec: {
@@ -167,8 +171,13 @@ export function ProcessSchema() {
       </div>
 
       {/* SVG Schema */}
-      <div className="relative bg-slate-950 rounded-2xl p-6 border border-slate-800/60">
-        <svg className="w-full" style={{ minHeight: 700 }} viewBox="0 0 1400 700" preserveAspectRatio="xMidYMid meet">
+      <div className="relative bg-slate-950 rounded-2xl p-4 sm:p-6 border border-slate-800/60 overflow-x-auto">
+        <svg
+          className="w-[1200px] sm:w-full"
+          style={{ minHeight: 700, minWidth: 1000 }}
+          viewBox="0 0 1400 700"
+          preserveAspectRatio="xMidYMid meet"
+        >
           <defs>
             <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
               <polygon points="0 0, 10 5, 0 10" fill="#22d3ee" />

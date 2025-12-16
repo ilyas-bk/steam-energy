@@ -41,11 +41,10 @@ export function EnergyPanel() {
         <Card className="bg-gradient-to-br from-yellow-900/20 to-slate-900 border-2 border-yellow-500/30 shadow-lg shadow-yellow-500/10">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-slate-400 text-sm">Production Totale</p>
+              <p className="text-slate-400 text-sm">Production</p>
               <Zap className="w-5 h-5 text-yellow-400" />
             </div>
             <p className="text-3xl font-bold text-yellow-400">45.68 MW</p>
-            <p className="text-xs text-yellow-400 mt-2">+2.3% vs hier</p>
           </CardContent>
         </Card>
 
@@ -56,7 +55,6 @@ export function EnergyPanel() {
               <Activity className="w-5 h-5 text-blue-400" />
             </div>
             <p className="text-3xl font-bold text-blue-400">42.15 MW</p>
-            <p className="text-xs text-blue-400 mt-2">-1.8% vs hier</p>
           </CardContent>
         </Card>
 
@@ -67,7 +65,6 @@ export function EnergyPanel() {
               <TrendingUp className="w-5 h-5 text-emerald-400" />
             </div>
             <p className="text-3xl font-bold text-emerald-400">3.53 MW</p>
-            <p className="text-xs text-emerald-400 mt-2">Vers le réseau</p>
           </CardContent>
         </Card>
 
@@ -78,7 +75,6 @@ export function EnergyPanel() {
               <Gauge className="w-5 h-5 text-purple-400" />
             </div>
             <p className="text-3xl font-bold text-purple-400">93.2%</p>
-            <p className="text-xs text-purple-400 mt-2">Optimale</p>
           </CardContent>
         </Card>
       </div>

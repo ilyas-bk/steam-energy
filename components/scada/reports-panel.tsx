@@ -41,9 +41,9 @@ export function ReportsPanel() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h2 className="text-2xl font-bold text-white">Rapports & Analyses</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button className="bg-slate-500/20 text-slate-400 border border-slate-500/50 hover:bg-slate-500/30">
             <Calendar className="w-4 h-4 mr-2" />
             Période
@@ -56,7 +56,7 @@ export function ReportsPanel() {
       </div>
 
       {/* Primary KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-emerald-900/20 to-slate-900 border-2 border-emerald-500/30 shadow-lg shadow-emerald-500/10">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
@@ -64,7 +64,6 @@ export function ReportsPanel() {
               <DollarSign className="w-5 h-5 text-emerald-400" />
             </div>
             <p className="text-3xl font-bold text-emerald-400">543,200 DH</p>
-            <p className="text-xs text-emerald-400 mt-2">+18.5% ce mois</p>
           </CardContent>
         </Card>
 
@@ -75,7 +74,6 @@ export function ReportsPanel() {
               <Droplets className="w-5 h-5 text-blue-400" />
             </div>
             <p className="text-3xl font-bold text-blue-400">18,450 m³</p>
-            <p className="text-xs text-blue-400 mt-2">-22% consommation</p>
           </CardContent>
         </Card>
 
@@ -86,7 +84,6 @@ export function ReportsPanel() {
               <Leaf className="w-5 h-5 text-green-400" />
             </div>
             <p className="text-3xl font-bold text-green-400">142 Tonnes</p>
-            <p className="text-xs text-green-400 mt-2">Impact environnemental</p>
           </CardContent>
         </Card>
 
@@ -97,13 +94,12 @@ export function ReportsPanel() {
               <Brain className="w-5 h-5 text-purple-400" />
             </div>
             <p className="text-3xl font-bold text-purple-400">97.2%</p>
-            <p className="text-xs text-purple-400 mt-2">Performance optimale</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Financial Summary Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-slate-900 border-slate-800">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -162,7 +158,7 @@ export function ReportsPanel() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
+          <div className="h-80 min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -193,11 +189,11 @@ export function ReportsPanel() {
         <CardContent>
           <div className="space-y-3">
             {reports.map((report) => (
-              <div 
-                key={report.id} 
-                className="flex items-center justify-between p-4 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
+              <div
+                key={report.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors gap-3 min-w-0"
               >
-                <div className="flex items-center gap-4 flex-1">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
                   <FileText className="w-5 h-5 text-cyan-400" />
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
@@ -210,16 +206,16 @@ export function ReportsPanel() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={() => handleDownload(report.id, "pdf")}
                     className="bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30"
                   >
                     <Download className="w-4 h-4 mr-1" />
                     PDF
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={() => handleDownload(report.id, "excel")}
                     className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-500/30"
                   >
@@ -233,58 +229,20 @@ export function ReportsPanel() {
         </CardContent>
       </Card>
 
-      {/* Export Options */}
+      {/* Export Options (compact) */}
       <Card className="bg-slate-900 border-slate-800">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <FileDown className="w-5 h-5 text-purple-400" />
-            Options d'Export
+            Export
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-slate-800 border-slate-700 hover:border-red-500/50 transition-colors cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <FileText className="w-12 h-12 text-red-400 mx-auto mb-3" />
-                <h3 className="font-semibold text-white mb-2">Export PDF</h3>
-                <p className="text-xs text-slate-400">Rapport complet avec graphiques</p>
-                <Button 
-                  className="mt-4 bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30 w-full"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Télécharger PDF
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800 border-slate-700 hover:border-emerald-500/50 transition-colors cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <FileSpreadsheet className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-                <h3 className="font-semibold text-white mb-2">Export Excel</h3>
-                <p className="text-xs text-slate-400">Données brutes pour analyse</p>
-                <Button 
-                  className="mt-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-500/30 w-full"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Télécharger Excel
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800 border-slate-700 hover:border-blue-500/50 transition-colors cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <FileDown className="w-12 h-12 text-blue-400 mx-auto mb-3" />
-                <h3 className="font-semibold text-white mb-2">Export CSV</h3>
-                <p className="text-xs text-slate-400">Format universel compatible</p>
-                <Button 
-                  className="mt-4 bg-blue-500/20 text-blue-400 border border-blue-500/50 hover:bg-blue-500/30 w-full"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Télécharger CSV
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {[{label:"PDF",color:"red-500"},{label:"Excel",color:"emerald-500"},{label:"CSV",color:"blue-500"}].map(({label,color})=>(
+            <Button key={label} className={`bg-${color}/20 text-${color.replace("-500","-400")} border border-${color}/50 hover:bg-${color}/30`}>
+              <Download className="w-4 h-4 mr-2" />{label}
+            </Button>
+          ))}
         </CardContent>
       </Card>
     </div>

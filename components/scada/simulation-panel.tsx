@@ -422,12 +422,12 @@ export function SimulationPanel() {
   return (
     <div className="space-y-6">
       {/* Header with controls */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div className="min-w-0">
           <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Simulation du Procédé</h2>
-          <p className="text-slate-400 mt-1">Modifiez les paramètres d'entrée pour voir l'impact sur le système en temps réel</p>
+          <p className="text-slate-400 mt-1">Réglez les entrées, observez l'impact instantané.</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Slider Status Indicator - Big Light */}
           <div className={`flex items-center gap-3 px-4 py-2 rounded-lg border-2 ${isSliderHealthy ? "border-emerald-500/50 bg-emerald-500/10" : "border-red-500/50 bg-red-500/10"}`}>
             <div className={`w-4 h-4 rounded-full ${isSliderHealthy ? "bg-emerald-500 shadow-lg shadow-emerald-500/70 animate-pulse" : "bg-red-500 shadow-lg shadow-red-500/70 animate-pulse"}`} />
@@ -480,9 +480,9 @@ export function SimulationPanel() {
 
           {/* CAP Units */}
           {(["capU", "capV", "capW"] as const).map((unit) => {
-            const isUnitHealthy = checkCapUnitStatus(unit)
-            return (
-            <Card key={unit} className="bg-slate-800/40 border-slate-700/50 hover:border-indigo-500/30 transition-all">
+             const isUnitHealthy = checkCapUnitStatus(unit)
+             return (
+            <Card key={unit} className="bg-slate-800/40 border-slate-700/50 hover:border-indigo-500/30 transition-all min-w-0">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center justify-between">
                   <span className="flex items-center gap-2">
@@ -787,7 +787,7 @@ export function SimulationPanel() {
           </h3>
 
           {/* Main KPIs */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Card className="bg-gradient-to-br from-indigo-900/30 to-slate-900/40 border-indigo-500/30 hover:border-indigo-400/50 transition-all">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -912,25 +912,12 @@ export function SimulationPanel() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Formula explanation */}
-          <Card className="bg-slate-800/50 border-slate-700/30">
-            <CardContent className="p-4">
-              <p className="text-sm text-slate-400">
-                <strong className="text-slate-300">Formules utilisées:</strong>
-                <br />• Puissance = Σ(base + débit × coeff) par unité
-                <br />• Efficacité = 0.3×Temp + 0.25×Pression + 0.25×Unités + 0.2×Recyclage
-                <br />• Coût = (Énergie×850 + Eau×12 + Prod×150) × 24h
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </div>
-
       {/* Units Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* UNITÉ SULFURIQUE */}
-        <Card className="bg-gradient-to-br from-red-900/20 to-slate-900 border-2 border-red-500/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-red-900/20 to-slate-900 border-2 border-red-500/30 shadow-lg min-w-0">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-white flex items-center gap-2">
@@ -1019,7 +1006,7 @@ export function SimulationPanel() {
         </Card>
 
         {/* TRAITEMENT EAU (TED) */}
-        <Card className="bg-gradient-to-br from-blue-900/20 to-slate-900 border-2 border-blue-500/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-blue-900/20 to-slate-900 border-2 border-blue-500/30 shadow-lg min-w-0">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-white flex items-center gap-2">
@@ -1113,7 +1100,7 @@ export function SimulationPanel() {
       {/* Interactive Sliders Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Unité Sulfurique Controls */}
-        <Card className="bg-gradient-to-br from-red-900/10 to-slate-900 border-2 border-red-500/30">
+        <Card className="bg-gradient-to-br from-red-900/10 to-slate-900 border-2 border-red-500/30 min-w-0">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-3">
               <div className="w-4 h-4 rounded-full bg-red-500"></div>
@@ -1207,7 +1194,7 @@ export function SimulationPanel() {
         </Card>
 
         {/* Traitement TED Controls */}
-        <Card className="bg-gradient-to-br from-emerald-900/10 to-slate-900 border-2 border-emerald-500/30">
+        <Card className="bg-gradient-to-br from-emerald-900/10 to-slate-900 border-2 border-emerald-500/30 min-w-0">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-3">
               <div className="w-4 h-4 rounded-full bg-emerald-500"></div>
@@ -1263,7 +1250,7 @@ export function SimulationPanel() {
                     {((tedSliders.stockTotal / 20000) * 100).toFixed(0)}%
                   </span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden border border-slate-600">
                   <div
                     className={`h-3 rounded-full transition-all duration-300 ${
                       tedSliders.stockTotal > 15000

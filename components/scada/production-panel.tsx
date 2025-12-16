@@ -145,7 +145,7 @@ export function ProductionPanel() {
       <h2 className="text-2xl font-bold text-white">Contrôle de Production</h2>
 
       {/* Top KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-blue-900/20 to-slate-900 border-2 border-blue-500/30 shadow-lg shadow-blue-500/10">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
@@ -153,9 +153,8 @@ export function ProductionPanel() {
               <Activity className="w-5 h-5 text-blue-400" />
             </div>
             <p className="text-4xl font-bold text-blue-400">{activeUnits}<span className="text-xl text-slate-400">/2</span></p>
-            <div className="flex items-center gap-1 mt-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <p className="text-xs text-slate-400">{activeUnits} unités opérationnelles</p>
+            <div className="flex items-center gap-1 mt-2 text-xs text-slate-400">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Opérationnelles
             </div>
           </CardContent>
         </Card>
@@ -167,7 +166,6 @@ export function ProductionPanel() {
               <Zap className="w-5 h-5 text-yellow-400" />
             </div>
             <p className="text-4xl font-bold text-yellow-400">{totalProduction.toFixed(1)}<span className="text-xl text-slate-400"> MW</span></p>
-            <p className="text-xs text-yellow-400 mt-2">Puissance générée</p>
           </CardContent>
         </Card>
 
@@ -178,7 +176,6 @@ export function ProductionPanel() {
               <Gauge className="w-5 h-5 text-emerald-400" />
             </div>
             <p className="text-4xl font-bold text-emerald-400">{averageCharge.toFixed(0)}%</p>
-            <p className="text-xs text-emerald-400 mt-2">Utilisation globale</p>
           </CardContent>
         </Card>
 
@@ -213,14 +210,14 @@ export function ProductionPanel() {
       {/* Unit Details */}
       <div className="space-y-4">
         {units.map((unit) => (
-          <Card 
-            key={unit.id} 
+          <Card
+            key={unit.id}
             className="bg-slate-900 border-slate-800 hover:border-slate-700 transition-all duration-300 hover:shadow-lg"
           >
             <CardContent className="p-6">
               {/* Header Row */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 min-w-0">
+                <div className="flex items-start sm:items-center gap-4 min-w-0">
                   <div className="flex flex-col">
                     <h3 className="text-xl font-bold text-white">{unit.name}</h3>
                     <p className="text-sm text-slate-400">{unit.type}</p>
@@ -236,7 +233,7 @@ export function ProductionPanel() {
               </div>
 
               {/* Metrics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6">
                 {/* Charge with Progress Bar */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -265,7 +262,7 @@ export function ProductionPanel() {
                       {unit.consommation.toFixed(0)}%
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500">Efficacité énergétique</p>
+                  {/* concise */}
                 </div>
 
                 {/* Temperature */}
@@ -279,9 +276,7 @@ export function ProductionPanel() {
                       {unit.temperature.toFixed(0)}°C
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500">
-                    {unit.status === "running" ? (unit.temperature > 450 ? "Élevée" : "Normale") : "Refroidissement"}
-                  </p>
+                  <p className="text-xs text-slate-500">{unit.status === "running" ? "Surveillance" : "Refroidissement"}</p>
                 </div>
 
                 {/* Pression */}
@@ -295,9 +290,7 @@ export function ProductionPanel() {
                       {unit.pression.toFixed(1)} bar
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500">
-                    {unit.status === "running" ? (unit.pression > 10 ? "Haute" : "Optimale") : "Basse"}
-                  </p>
+                  <p className="text-xs text-slate-500">{unit.status === "running" ? "Pression en ligne" : "Basse"}</p>
                 </div>
               </div>
 

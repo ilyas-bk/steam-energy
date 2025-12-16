@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" style={{ fontSize: "12.8px" }}>
       <body className={`font-sans antialiased`}>
         {children}
         <Analytics />

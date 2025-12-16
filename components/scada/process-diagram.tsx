@@ -129,6 +129,9 @@ export function ProcessDiagram() {
     return () => clearInterval(interval)
   }, [])
 
+  const formatTemp = (value: number | undefined | null) =>
+    Number.isFinite(value as number) ? (value as number).toFixed(2) : "0.00"
+
   return (
     <div className="space-y-6">
       <div className="relative">
@@ -333,7 +336,7 @@ export function ProcessDiagram() {
 
               <div className="bg-gradient-to-br from-orange-900/60 to-slate-900/60 rounded-lg p-3 border border-orange-500/30 text-center">
                 <div className="text-xs text-slate-400 mb-1">Temperature</div>
-                <div className="text-2xl font-bold text-orange-400">{central.vhpTemp}°C</div>
+                <div className="text-2xl font-bold text-orange-400">{formatTemp(central.vhpTemp)}°C</div>
               </div>
 
               <div className="bg-gradient-to-br from-purple-900/40 to-slate-900/40 rounded-lg p-3 border border-purple-500/30">
