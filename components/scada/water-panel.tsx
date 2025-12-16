@@ -1,16 +1,33 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
+import { useDashboard } from "@/context/dashboard-context"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
 import { Droplets, Recycle, TrendingDown, CheckCircle, Gauge, Thermometer, Activity, AlertTriangle } from "lucide-react"
 
 export function WaterPanel() {
+  const { dataMultiplier, anomalyActive } = useDashboard()
   const [currentFlow, setCurrentFlow] = useState(1285.6)
   const [recycleRate, setRecycleRate] = useState(68.2)
   const [monthlySavings, setMonthlySavings] = useState(4250)
   const [avgQuality, setAvgQuality] = useState(96.8)
+
+  // Apply multiplier for anomaly - water leak reduces water availability
+  const adjustedFlow = useMemo(() => {
+    if (anomalyActive === "water-leak") {
+      return currentFlow * 0.7 // Simulate 30% water loss
+    }
+    return currentFlow
+  }, [currentFlow, anomalyActive])
+
+  const adjustedSavings = useMemo(() => {
+    if (anomalyActive === "water-leak") {
+      return monthlySavings * 0.6
+    }
+    return monthlySavings
+  }, [monthlySavings, anomalyActive])
 
   const [consumptionData, setConsumptionData] = useState([
     { time: "00:00", consommation: 1180, recyclage: 805 },
@@ -94,7 +111,15 @@ export function WaterPanel() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Gestion de l'Eau</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-white">Gestion de l'Eau</h2>
+        {anomalyActive === "water-leak" && (
+          <div className="px-4 py-2 rounded-lg font-semibold flex items-center gap-2 bg-red-500/20 text-red-400 border border-red-500/50">
+            <AlertTriangle className="w-4 h-4" />
+            Fuite d'Eau Détectée
+          </div>
+        )}
+      </div>
 
       {/* Top KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -104,11 +129,15 @@ export function WaterPanel() {
               <p className="text-slate-400 text-sm">Débit Actuel</p>
               <Droplets className="w-5 h-5 text-blue-400" />
             </div>
-            <p className="text-3xl font-bold text-blue-400 mb-3">{currentFlow.toFixed(1)} m³/h</p>
+            <p className="text-3xl font-bold text-blue-400 mb-3">{adjustedFlow.toFixed(1)} m³/h</p>
             <div className="w-full bg-slate-800 rounded-full h-2">
               <div 
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${flowProgress}%` }}
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  anomalyActive === "water-leak" 
+                    ? "bg-gradient-to-r from-red-500 to-orange-500"
+                    : "bg-gradient-to-r from-blue-500 to-cyan-500"
+                }`}
+                style={{ width: `${Math.min(100, (adjustedFlow / 1500) * 100)}%` }}
               />
             </div>
             <p className="text-xs text-slate-500 mt-2">Capacité: 1500 m³/h</p>
@@ -132,8 +161,8 @@ export function WaterPanel() {
               <p className="text-slate-400 text-sm">Économie d'Eau (mois)</p>
               <TrendingDown className="w-5 h-5 text-cyan-400" />
             </div>
-            <p className="text-3xl font-bold text-cyan-400">{monthlySavings.toFixed(0)} m³</p>
-            <p className="text-xs text-cyan-400 mt-2">-15% consommation</p>
+            <p className="text-3xl font-bold text-cyan-400">{adjustedSavings.toFixed(0)} m³</p>
+            <p className="text-xs text-cyan-400 mt-2">{anomalyActive === "water-leak" ? "-40% perte" : "-15% consommation"}</p>
           </CardContent>
         </Card>
 

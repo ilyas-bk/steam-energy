@@ -18,7 +18,10 @@ import {
   Factory,
   Flame,
   Beaker,
+  Activity,
+  AlertCircle,
 } from "lucide-react"
+import { useDashboard } from "@/context/dashboard-context"
 
 // Input parameters that user can control
 interface InputParameters {
@@ -44,7 +47,21 @@ interface CalculatedOutputs {
   conductivityEstimate: number
 }
 
+interface UnitState {
+  name: string
+  status: "running" | "stopped"
+  charge: number
+  temperature?: number
+  debitHot?: number
+  debit?: number
+  pression?: number
+  basePression?: number
+  stockTotal?: number
+  stockPercentage?: number
+}
+
 export function SimulationPanel() {
+  const { dataMultiplier } = useDashboard()
   const [isRunning, setIsRunning] = useState(false)
 
   // Input parameters (user-controlled)
@@ -69,6 +86,49 @@ export function SimulationPanel() {
     waterRecycled: 0,
     phEstimate: 7.0,
     conductivityEstimate: 400,
+  })
+
+  // Unit states
+  const [units, setUnits] = useState<Record<string, UnitState>>({
+    capU: {
+      name: "CAP U",
+      status: "running",
+      charge: 118.5,
+      temperature: 65,
+      debit: 63.1,
+      pression: 4.2,
+    },
+    capV: {
+      name: "CAP V",
+      status: "running",
+      charge: 113.6,
+      temperature: 68,
+      debit: 56.6,
+      pression: 4.5,
+    },
+    capW: {
+      name: "CAP W",
+      status: "running",
+      charge: 113.4,
+      temperature: 62,
+      debit: 61.4,
+      pression: 4.1,
+    },
+    sulfurique: {
+      name: "Unité Sulfurique",
+      status: "running",
+      charge: 83,
+      temperature: 410,
+      debitHot: 46,
+      pression: 8.2,
+    },
+    ted: {
+      name: "Traitement Eau (TED)",
+      status: "running",
+      charge: 86,
+      stockTotal: 15125,
+      stockPercentage: 86,
+    },
   })
 
   // Calculate outputs based on inputs
@@ -246,6 +306,119 @@ export function SimulationPanel() {
     }))
   }
 
+  // Simulate unit data changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setUnits((prev) => ({
+        ...prev,
+        capU: {
+          ...prev.capU,
+          charge: Math.max(60, Math.min(95, prev.capU.charge + (Math.random() - 0.5) * 3)),
+          temperature: Math.max(50, Math.min(80, prev.capU.temperature! + (Math.random() - 0.5) * 2)),
+          debit: Math.max(50, Math.min(75, prev.capU.debit! + (Math.random() - 0.5) * 1.5)),
+          pression: Math.max(3.5, Math.min(5, prev.capU.pression! + (Math.random() - 0.5) * 0.2)),
+        },
+        capV: {
+          ...prev.capV,
+          charge: Math.max(60, Math.min(95, prev.capV.charge + (Math.random() - 0.5) * 3)),
+          temperature: Math.max(50, Math.min(80, prev.capV.temperature! + (Math.random() - 0.5) * 2)),
+          debit: Math.max(50, Math.min(75, prev.capV.debit! + (Math.random() - 0.5) * 1.5)),
+          pression: Math.max(3.5, Math.min(5, prev.capV.pression! + (Math.random() - 0.5) * 0.2)),
+        },
+        capW: {
+          ...prev.capW,
+          charge: Math.max(60, Math.min(95, prev.capW.charge + (Math.random() - 0.5) * 3)),
+          temperature: Math.max(50, Math.min(80, prev.capW.temperature! + (Math.random() - 0.5) * 2)),
+          debit: Math.max(50, Math.min(75, prev.capW.debit! + (Math.random() - 0.5) * 1.5)),
+          pression: Math.max(3.5, Math.min(5, prev.capW.pression! + (Math.random() - 0.5) * 0.2)),
+        },
+        sulfurique: {
+          ...prev.sulfurique,
+          charge: Math.max(60, Math.min(95, prev.sulfurique.charge + (Math.random() - 0.5) * 3)),
+          temperature: Math.max(380, Math.min(450, prev.sulfurique.temperature! + (Math.random() - 0.5) * 5)),
+          debitHot: Math.max(35, Math.min(55, prev.sulfurique.debitHot! + (Math.random() - 0.5) * 2)),
+          basePression: Math.max(7.5, Math.min(9.5, prev.sulfurique.basePression! + (Math.random() - 0.5) * 0.3)),
+        },
+        ted: {
+          ...prev.ted,
+          // Stock impacts charge - when stock reduces, charge decreases
+          stockTotal: Math.max(12000, Math.min(16000, prev.ted.stockTotal! + Math.floor((Math.random() - 0.5) * 200))),
+          stockPercentage: Math.max(60, Math.min(95, prev.ted.stockPercentage! + (Math.random() - 0.5) * 3)),
+          // Charge is directly affected by stock percentage
+          charge: (prev.ted.stockPercentage! + (Math.random() - 0.5) * 3) * 0.95, // 95% correlation with stock
+        },
+      }))
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const getStatusBadge = (status: string) => {
+    return status === "running" ? (
+      <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/50">En marche</Badge>
+    ) : (
+      <Badge className="bg-red-500/20 text-red-400 border-red-500/50">Arrêt</Badge>
+    )
+  }
+
+  const getChargeBarColor = (charge: number) => {
+    if (charge >= 80) return "from-emerald-500 to-cyan-500"
+    if (charge >= 50) return "from-amber-500 to-yellow-500"
+    return "from-red-500 to-amber-500"
+  }
+
+  const getTemperatureStatus = (temp: number, unit: string) => {
+    if (unit === "sulfurique") {
+      if (temp > 450) return "text-red-400"
+      if (temp > 430) return "text-amber-400"
+      return "text-emerald-400"
+    }
+    // CAP units
+    return "text-emerald-400"
+  }
+
+  const getPressionStatus = (pression: number, unit: string) => {
+    if (unit === "sulfurique") {
+      if (pression > 9) return "text-amber-400"
+      return "text-cyan-400"
+    }
+    // CAP units - lower pressure
+    return "text-cyan-400"
+  }
+
+  // New state for interactive sliders
+  const [sulfuriqueSliders, setSulfuriqueSliders] = useState({
+    temperature: 410,
+    debit: 46,
+    pression: 8.2,
+  })
+
+  const [tedSliders, setTedSliders] = useState({
+    stockTotal: 15125,
+  })
+
+  const handleSulfuriqueSliderChange = (property: "temperature" | "debit" | "pression", value: number) => {
+    setSulfuriqueSliders((prev) => ({
+      ...prev,
+      [property]: value,
+    }))
+  }
+
+  const handleTedSliderChange = (value: number) => {
+    setTedSliders({ stockTotal: value })
+  }
+
+  const getStockStatus = (stock: number) => {
+    if (stock > 15000) {
+      return { status: "✓ Stock Optimal", color: "text-emerald-400", bgColor: "bg-emerald-500/10 border-emerald-500/30" }
+    } else if (stock > 10000) {
+      return { status: "⚠ Stock Moyen", color: "text-yellow-400", bgColor: "bg-yellow-500/10 border-yellow-500/30" }
+    } else {
+      return { status: "❌ Stock Critique", color: "text-red-400", bgColor: "bg-red-500/10 border-red-500/30" }
+    }
+  }
+
+  const stockStatus = getStockStatus(tedSliders.stockTotal)
+
   return (
     <div className="space-y-6">
       {/* Header with controls */}
@@ -357,6 +530,52 @@ export function SimulationPanel() {
                     min={0}
                     max={200}
                     step={1}
+                    disabled={!inputs[unit].active}
+                    className="w-full"
+                  />
+                </div>
+                {/* New Fields: Temperature, Débit, Pression */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Température</span>
+                    <span className="text-indigo-300 font-semibold">{units[unit].temperature} °C</span>
+                  </div>
+                  <Slider
+                    value={[units[unit].temperature!]}
+                    onValueChange={([v]) => updateCapUnit(unit, "temperature", v)}
+                    min={0}
+                    max={100}
+                    step={1}
+                    disabled={!inputs[unit].active}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Débit</span>
+                    <span className="text-indigo-300 font-semibold">{units[unit].debit} m³/h</span>
+                  </div>
+                  <Slider
+                    value={[units[unit].debit!]}
+                    onValueChange={([v]) => updateCapUnit(unit, "debit", v)}
+                    min={0}
+                    max={75}
+                    step={1}
+                    disabled={!inputs[unit].active}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Pression</span>
+                    <span className="text-indigo-300 font-semibold">{units[unit].pression} bar</span>
+                  </div>
+                  <Slider
+                    value={[units[unit].pression!]}
+                    onValueChange={([v]) => updateCapUnit(unit, "pression", v)}
+                    min={0}
+                    max={10}
+                    step={0.1}
                     disabled={!inputs[unit].active}
                     className="w-full"
                   />
@@ -707,6 +926,398 @@ export function SimulationPanel() {
           </Card>
         </div>
       </div>
+
+      {/* Units Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* UNITÉ SULFURIQUE */}
+        <Card className="bg-gradient-to-br from-red-900/20 to-slate-900 border-2 border-red-500/30 shadow-lg">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white flex items-center gap-2">
+                <Activity className="w-5 h-5 text-red-400" />
+                {units.sulfurique.name}
+              </CardTitle>
+              {getStatusBadge(units.sulfurique.status)}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Charge with Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 text-sm flex items-center gap-2">
+                  <Gauge className="w-4 h-4" />
+                  Charge
+                </span>
+                <span className="text-white font-bold">{units.sulfurique.charge.toFixed(0)}%</span>
+              </div>
+              <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden">
+                <div
+                  className={`bg-gradient-to-r ${getChargeBarColor(units.sulfurique.charge)} h-4 rounded-full transition-all duration-500`}
+                  style={{ width: `${units.sulfurique.charge}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Temperature */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 text-sm flex items-center gap-2">
+                  <Thermometer className="w-4 h-4" />
+                  Température
+                </span>
+                <span className={`font-bold text-lg ${getTemperatureStatus(units.sulfurique.temperature!, "sulfurique")}`}>
+                  {units.sulfurique.temperature!.toFixed(0)}°C
+                </span>
+              </div>
+              <div className="text-xs text-slate-500">
+                {units.sulfurique.temperature! > 450
+                  ? "🔴 Très élevée - Intervention requise"
+                  : units.sulfurique.temperature! > 430
+                    ? "🟡 Élevée - À surveiller"
+                    : "🟢 Optimale"}
+              </div>
+            </div>
+
+            {/* Débit VHP */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 text-sm flex items-center gap-2">
+                  <Droplets className="w-4 h-4" />
+                  Débit VHP
+                </span>
+                <span className="text-white font-bold text-lg">{units.sulfurique.debitHot!.toFixed(1)} T/h</span>
+              </div>
+              <div className="text-xs text-slate-500">Vapeur Haute Pression</div>
+            </div>
+
+            {/* Pression */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 text-sm flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  Pression
+                </span>
+                <span className={`font-bold text-lg ${getPressionStatus(units.sulfurique.pression!, "sulfurique")}`}>
+                  {units.sulfurique.pression!.toFixed(1)} bar
+                </span>
+              </div>
+              <div className="text-xs text-slate-500">
+                {units.sulfurique.pression! > 9
+                  ? "⚠️ Pression élevée"
+                  : "✓ Pression optimale"}
+              </div>
+            </div>
+
+            {/* Status Indicator */}
+            <div className="pt-4 border-t border-slate-700/50">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-sm text-slate-400">Système opérationnel</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* TRAITEMENT EAU (TED) */}
+        <Card className="bg-gradient-to-br from-blue-900/20 to-slate-900 border-2 border-blue-500/30 shadow-lg">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white flex items-center gap-2">
+                <Droplets className="w-5 h-5 text-blue-400" />
+                {units.ted.name}
+              </CardTitle>
+              {getStatusBadge(units.ted.status)}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Charge with Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 text-sm flex items-center gap-2">
+                  <Gauge className="w-4 h-4" />
+                  Charge Traitement
+                </span>
+                <span className="text-white font-bold">{units.ted.charge.toFixed(0)}%</span>
+              </div>
+              <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden">
+                <div
+                  className={`bg-gradient-to-r ${getChargeBarColor(units.ted.charge)} h-4 rounded-full transition-all duration-500`}
+                  style={{ width: `${units.ted.charge}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Stock Total */}
+            <div className="space-y-3 bg-slate-800/50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 text-sm flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  Stock Total
+                </span>
+                <span className="text-white font-bold text-lg">{units.ted.stockTotal!.toLocaleString()} m³</span>
+              </div>
+
+              {/* Stock Percentage Bar */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-xs">Capacité</span>
+                  <span className={`text-xs font-semibold ${
+                    units.ted.stockPercentage! >= 80
+                      ? "text-emerald-400"
+                      : units.ted.stockPercentage! >= 50
+                        ? "text-amber-400"
+                        : "text-red-400"
+                  }`}>
+                    {units.ted.stockPercentage!.toFixed(0)}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-700 rounded-full h-5 overflow-hidden border border-slate-600">
+                  <div
+                    className={`bg-gradient-to-r ${
+                      units.ted.stockPercentage! >= 80
+                        ? "from-emerald-500 to-cyan-500"
+                        : units.ted.stockPercentage! >= 50
+                          ? "from-amber-500 to-yellow-500"
+                          : "from-red-500 to-amber-500"
+                    } h-5 rounded-full transition-all duration-500 flex items-center justify-end pr-2`}
+                    style={{ width: `${units.ted.stockPercentage!}%` }}
+                  >
+                    {units.ted.stockPercentage! > 10 && (
+                      <span className="text-xs font-bold text-white">{units.ted.stockPercentage!.toFixed(0)}%</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stock Status */}
+              <div className="text-xs text-slate-400 pt-2">
+                {units.ted.stockPercentage! >= 80
+                  ? "🟢 Stock optimal"
+                  : units.ted.stockPercentage! >= 50
+                    ? "🟡 Stock acceptable"
+                    : "🔴 Stock critique - Approvisionnement requis"}
+              </div>
+            </div>
+
+            {/* Status Indicator */}
+            <div className="pt-4 border-t border-slate-700/50">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-sm text-slate-400">Système opérationnel</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Interactive Sliders Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Unité Sulfurique Controls */}
+        <Card className="bg-gradient-to-br from-red-900/10 to-slate-900 border-2 border-red-500/30">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-3">
+              <div className="w-4 h-4 rounded-full bg-red-500"></div>
+              🔥 Unité Sulfurique - Contrôle Avancé
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Temperature Slider */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-slate-300 font-medium flex items-center gap-2">
+                  <Thermometer className="w-5 h-5 text-blue-400" />
+                  Température VHP
+                </label>
+                <span className="text-white font-bold text-xl">{sulfuriqueSliders.temperature.toFixed(1)}°C</span>
+              </div>
+              <Slider
+                value={[sulfuriqueSliders.temperature]}
+                onValueChange={([v]) => handleSulfuriqueSliderChange("temperature", v)}
+                min={300}
+                max={500}
+                step={0.5}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-slate-400">
+                <span>300°C</span>
+                <span>500°C</span>
+              </div>
+              <div className={`rounded-lg p-3 border ${sulfuriqueSliders.temperature > 450 ? "bg-red-500/10 border-red-500/30" : sulfuriqueSliders.temperature > 420 ? "bg-yellow-500/10 border-yellow-500/30" : "bg-emerald-500/10 border-emerald-500/30"}`}>
+                <p className={`text-xs font-semibold ${sulfuriqueSliders.temperature > 450 ? "text-red-400" : sulfuriqueSliders.temperature > 420 ? "text-yellow-400" : "text-emerald-400"}`}>
+                  {sulfuriqueSliders.temperature > 450
+                    ? "⚠️ Température très élevée - Intervention requise"
+                    : sulfuriqueSliders.temperature > 420
+                      ? "! Température élevée - À surveiller"
+                      : "✓ Température optimale"}
+                </p>
+              </div>
+            </div>
+
+            {/* Débit VHP Slider */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-slate-300 font-medium flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-orange-400" />
+                  Débit VHP (Hot)
+                </label>
+                <span className="text-white font-bold text-xl">{sulfuriqueSliders.debit.toFixed(1)} T/h</span>
+              </div>
+              <Slider
+                value={[sulfuriqueSliders.debit]}
+                onValueChange={([v]) => handleSulfuriqueSliderChange("debit", v)}
+                min={20}
+                max={80}
+                step={0.5}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-slate-400">
+                <span>20 T/h</span>
+                <span>80 T/h</span>
+              </div>
+            </div>
+
+            {/* Pression Base Slider */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-slate-300 font-medium flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-cyan-400" />
+                  Pression Base
+                </label>
+                <span className="text-white font-bold text-xl">{sulfuriqueSliders.pression.toFixed(2)} bar</span>
+              </div>
+              <Slider
+                value={[sulfuriqueSliders.pression]}
+                onValueChange={([v]) => handleSulfuriqueSliderChange("pression", v)}
+                min={5}
+                max={12}
+                step={0.1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-slate-400">
+                <span>5 bar</span>
+                <span>12 bar</span>
+              </div>
+              <div className={`rounded-lg p-3 border ${sulfuriqueSliders.pression > 10 ? "bg-amber-500/10 border-amber-500/30" : "bg-emerald-500/10 border-emerald-500/30"}`}>
+                <p className={`text-xs font-semibold ${sulfuriqueSliders.pression > 10 ? "text-amber-400" : "text-emerald-400"}`}>
+                  {sulfuriqueSliders.pression > 10 ? "⚠ Pression élevée" : "✓ Pression optimale"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Traitement TED Controls */}
+        <Card className="bg-gradient-to-br from-emerald-900/10 to-slate-900 border-2 border-emerald-500/30">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-3">
+              <div className="w-4 h-4 rounded-full bg-emerald-500"></div>
+              💧 Traitement Eau TED - Gestion Stock
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Stock Total Slider */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-slate-300 font-medium flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-emerald-400" />
+                  Stock Total
+                </label>
+                <span className="text-white font-bold text-xl">{tedSliders.stockTotal.toFixed(0)} L</span>
+              </div>
+              <Slider
+                value={[tedSliders.stockTotal]}
+                onValueChange={([v]) => {
+                  handleTedSliderChange(v)
+                  // Update charge based on stock change
+                  const stockPercentage = (v / 20000) * 100
+                  setUnits((prev) => ({
+                    ...prev,
+                    ted: {
+                      ...prev.ted,
+                      stockTotal: v,
+                      stockPercentage: stockPercentage,
+                      charge: Math.max(40, stockPercentage * 0.95), // Charge correlates with stock
+                    },
+                  }))
+                }}
+                min={5000}
+                max={20000}
+                step={100}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-slate-400">
+                <span>5,000 L</span>
+                <span>20,000 L</span>
+              </div>
+            </div>
+
+            {/* Stock Status Indicator with Charge Impact */}
+            <div className={`rounded-lg p-4 border ${stockStatus.bgColor}`}>
+              <p className={`text-sm font-semibold ${stockStatus.color}`}>
+                {stockStatus.status}
+              </p>
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400">Capacité</span>
+                  <span className={`font-semibold ${stockStatus.color}`}>
+                    {((tedSliders.stockTotal / 20000) * 100).toFixed(0)}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-300 ${
+                      tedSliders.stockTotal > 15000
+                        ? "bg-gradient-to-r from-emerald-500 to-cyan-500"
+                        : tedSliders.stockTotal > 10000
+                          ? "bg-gradient-to-r from-yellow-500 to-amber-500"
+                          : "bg-gradient-to-r from-red-500 to-orange-500"
+                    }`}
+                    style={{ width: `${(tedSliders.stockTotal / 20000) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Charge Impact Warning */}
+              <div className="mt-4 pt-4 border-t border-slate-600/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Impact sur Charge</span>
+                  <span className={`text-sm font-bold ${
+                    tedSliders.stockTotal > 15000 ? "text-emerald-400" :
+                    tedSliders.stockTotal > 10000 ? "text-yellow-400" :
+                    "text-red-400"
+                  }`}>
+                    {Math.max(40, (tedSliders.stockTotal / 20000) * 100 * 0.95).toFixed(0)}%
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  {tedSliders.stockTotal < 8000 
+                    ? "⚠️ Stock faible = Charge réduite" 
+                    : tedSliders.stockTotal < 12000 
+                    ? "! Stock moyen = Charge moyenne"
+                    : "✓ Stock optimal = Charge optimale"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Data Multiplier Alert */}
+      {dataMultiplier < 1 && (
+        <Card className="bg-red-900/20 border-2 border-red-500/30">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0" />
+              <div>
+                <h4 className="text-red-400 font-semibold mb-1">⚠️ Anomalie Détectée</h4>
+                <p className="text-sm text-red-300">
+                  L'efficacité système est réduite à {(dataMultiplier * 100).toFixed(0)}%. Vérifiez les alertes pour plus de détails.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

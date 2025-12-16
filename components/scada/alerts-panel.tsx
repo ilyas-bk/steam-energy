@@ -4,7 +4,8 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { AlertTriangle, AlertCircle, Info, CheckCircle, X, Settings, Archive, MapPin, Clock, Thermometer, Droplets, Zap, Activity, Wrench, Brain, AlertOctagon } from "lucide-react"
+import { AlertTriangle, AlertCircle, Info, CheckCircle, X, Settings, Archive, MapPin, Clock, Thermometer, Droplets, Zap, Activity, Wrench, Brain, AlertOctagon, Star } from "lucide-react"
+import { useDashboard } from "@/context/dashboard-context"
 
 interface Alert {
   id: string
@@ -16,11 +17,19 @@ interface Alert {
   source: string
   category: "thermique" | "qualité" | "ressources" | "production" | "maintenance" | "ia"
   impact?: string
+  aiSuggestions?: {
+    title: string
+    description: string
+    priority: "high" | "medium" | "low"
+    action?: string
+  }[]
 }
 
 type FilterCategory = "all" | "critical" | "warning" | "info" | "unacknowledged"
 
 export function AlertsPanel() {
+  const { alertEmails, addAlertEmail, removeAlertEmail, sendAlertEmail, setPrimaryAlertEmail } = useDashboard()
+  const [emailInput, setEmailInput] = useState("")
   const [activeFilter, setActiveFilter] = useState<FilterCategory>("all")
   const [alerts, setAlerts] = useState<Alert[]>([
     {
@@ -32,7 +41,27 @@ export function AlertsPanel() {
       acknowledged: false,
       source: "Unité Sulfurique",
       category: "thermique",
-      impact: "Risque de dépassement de seuil critique et arrêt automatique"
+      impact: "Risque de dépassement de seuil critique et arrêt automatique",
+      aiSuggestions: [
+        {
+          title: "Réduire l'apport thermique",
+          description: "Diminuer l'alimentation en vapeur VHP de 15% pour ramener la température à 415°C",
+          priority: "high",
+          action: "Appliquer"
+        },
+        {
+          title: "Augmenter le débit de refroidissement",
+          description: "Augmenter le circuit de refroidissement secondaire de 20% pour accélérer la dissipation",
+          priority: "high",
+          action: "Appliquer"
+        },
+        {
+          title: "Vérifier les échangeurs",
+          description: "Inspectionner l'échangeur thermique pour déceler un encrassement possible",
+          priority: "medium",
+          action: "Diagnostiquer"
+        }
+      ]
     },
     {
       id: "2",
@@ -43,7 +72,27 @@ export function AlertsPanel() {
       acknowledged: false,
       source: "CAP W",
       category: "qualité",
-      impact: "Qualité de l'eau compromise - ajustement requis"
+      impact: "Qualité de l'eau compromise - ajustement requis",
+      aiSuggestions: [
+        {
+          title: "Ajuster l'injection alcaline",
+          description: "Augmenter l'injection de solution alcaline de 2.5% pour corriger le pH à 7.2",
+          priority: "high",
+          action: "Appliquer"
+        },
+        {
+          title: "Vérifier la source d'eau",
+          description: "Tester l'eau d'entrée pour vérifier qu'il n'y a pas de contamination acide",
+          priority: "medium",
+          action: "Tester"
+        },
+        {
+          title: "Augmenter la fréquence de contrôle",
+          description: "Passer à un contrôle toutes les 15 minutes jusqu'à stabilisation",
+          priority: "low",
+          action: "Configurer"
+        }
+      ]
     },
     {
       id: "3",
@@ -53,7 +102,27 @@ export function AlertsPanel() {
       timestamp: "14:15:00",
       acknowledged: true,
       source: "Traitement TED",
-      category: "ressources"
+      category: "ressources",
+      aiSuggestions: [
+        {
+          title: "Commander un approvisionnement d'urgence",
+          description: "Lancer une commande express de 5 tonnes de produits de traitement TED",
+          priority: "high",
+          action: "Commander"
+        },
+        {
+          title: "Optimiser la consommation",
+          description: "Réduire les débits de recyclage non essentiels de 10% pour étendre les stocks",
+          priority: "high",
+          action: "Appliquer"
+        },
+        {
+          title: "Prévoir un surstock",
+          description: "Augmenter le seuil de réapprovisionnement de 20% pour éviter les ruptures futures",
+          priority: "medium",
+          action: "Configurer"
+        }
+      ]
     },
     {
       id: "4",
@@ -63,7 +132,21 @@ export function AlertsPanel() {
       timestamp: "10:00:00",
       acknowledged: true,
       source: "CAP V",
-      category: "maintenance"
+      category: "maintenance",
+      aiSuggestions: [
+        {
+          title: "Préparer les pièces de rechange",
+          description: "Vérifier la disponibilité des filtres et joints pour CAP V avant la maintenance",
+          priority: "medium",
+          action: "Vérifier"
+        },
+        {
+          title: "Programmer la maintenance préventive",
+          description: "En parallèle de cette maintenance, effectuer une révision des capteurs de température",
+          priority: "low",
+          action: "Ajouter"
+        }
+      ]
     },
     {
       id: "5",
@@ -74,7 +157,27 @@ export function AlertsPanel() {
       acknowledged: false,
       source: "Circuit Primaire",
       category: "thermique",
-      impact: "Risque de surpression - intervention immédiate requise"
+      impact: "Risque de surpression - intervention immédiate requise",
+      aiSuggestions: [
+        {
+          title: "Purger le circuit primaire",
+          description: "Ouvrir le purgeur d'air pour libérer 0.8 bar de pression excédentaire",
+          priority: "high",
+          action: "Purger"
+        },
+        {
+          title: "Réduire l'apport d'eau chaude",
+          description: "Diminuer le débit d'entrée de 8% et réduire la température de 5°C",
+          priority: "high",
+          action: "Appliquer"
+        },
+        {
+          title: "Vérifier le clapet de sécurité",
+          description: "Inspecter et nettoyer le clapet de sécurité, il pourrait être encrasse",
+          priority: "high",
+          action: "Inspecter"
+        }
+      ]
     },
     {
       id: "6",
@@ -84,7 +187,21 @@ export function AlertsPanel() {
       timestamp: "13:20:10",
       acknowledged: true,
       source: "Système IA",
-      category: "ia"
+      category: "ia",
+      aiSuggestions: [
+        {
+          title: "Valider les résultats",
+          description: "Les ajustements ont augmenté l'efficacité de 3.2%. Ces modifications sont stables.",
+          priority: "low",
+          action: "Approuver"
+        },
+        {
+          title: "Appliquer aux autres CAP",
+          description: "Dupliquer les ajustements optimisés à CAP V et CAP W pour une efficacité globale",
+          priority: "medium",
+          action: "Dupliquer"
+        }
+      ]
     },
     {
       id: "7",
@@ -95,7 +212,27 @@ export function AlertsPanel() {
       acknowledged: false,
       source: "Circuit Refroidissement",
       category: "ressources",
-      impact: "Refroidissement insuffisant - surveillance nécessaire"
+      impact: "Refroidissement insuffisant - surveillance nécessaire",
+      aiSuggestions: [
+        {
+          title: "Nettoyer les filtres",
+          description: "Le débit réduit indique un encrassement probable des filtres d'entrée. Nettoyage recommandé.",
+          priority: "high",
+          action: "Nettoyer"
+        },
+        {
+          title: "Augmenter la puissance pompe",
+          description: "Augmenter la vitesse de la pompe de 5% pour compenser la perte de débit",
+          priority: "medium",
+          action: "Appliquer"
+        },
+        {
+          title: "Vérifier les vannes d'isolement",
+          description: "S'assurer qu'aucune vanne n'est partiellement fermée sur le circuit",
+          priority: "medium",
+          action: "Vérifier"
+        }
+      ]
     },
     {
       id: "8",
@@ -105,7 +242,15 @@ export function AlertsPanel() {
       timestamp: "09:00:00",
       acknowledged: true,
       source: "Système Qualité",
-      category: "qualité"
+      category: "qualité",
+      aiSuggestions: [
+        {
+          title: "Documenter les paramètres",
+          description: "Les configuration actuelle assurant conformité totale. À conserver en référence.",
+          priority: "low",
+          action: "Archiver"
+        }
+      ]
     }
   ])
 
@@ -170,6 +315,32 @@ export function AlertsPanel() {
     }
   }
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-500/10 border-red-500/50 text-red-300"
+      case "medium":
+        return "bg-amber-500/10 border-amber-500/50 text-amber-300"
+      case "low":
+        return "bg-blue-500/10 border-blue-500/50 text-blue-300"
+      default:
+        return "bg-slate-500/10 border-slate-500/50 text-slate-300"
+    }
+  }
+
+  const getPriorityBadge = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return <Badge className="bg-red-500/20 text-red-400 border-red-500/50">Haute Priorité</Badge>
+      case "medium":
+        return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/50">Priorité Moyenne</Badge>
+      case "low":
+        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/50">Basse Priorité</Badge>
+      default:
+        return <Badge className="bg-slate-500/20 text-slate-400 border-slate-500/50">Non définie</Badge>
+    }
+  }
+
   const getAlertStyle = (level: string, acknowledged: boolean) => {
     const opacity = acknowledged ? "opacity-60" : ""
     switch (level) {
@@ -206,6 +377,17 @@ export function AlertsPanel() {
   const infoCount = alerts.filter((a) => (a.level === "info" || a.level === "success") && !a.acknowledged).length
   const unacknowledgedCount = alerts.filter((a) => !a.acknowledged).length
 
+  const handleAdd = () => {
+    const trimmed = emailInput.trim()
+    if (!trimmed) return
+    if (!trimmed.includes("@")) {
+      console.error("Invalid email format")
+      return
+    }
+    addAlertEmail(trimmed)
+    setEmailInput("")
+  }
+
   return (
     <div className="space-y-6">
       {/* Header with Action Buttons */}
@@ -222,7 +404,7 @@ export function AlertsPanel() {
           <Button
             size="sm"
             className="bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 hover:bg-cyan-500/30"
-            onClick={archiveAll}
+            onClick={() => setAlerts((prev) => prev.map((alert) => ({ ...alert, acknowledged: true })))}
           >
             <Archive className="w-4 h-4 mr-2" />
             Archiver Tout
@@ -321,6 +503,88 @@ export function AlertsPanel() {
         </Button>
       </div>
 
+      {/* Alert email recipients - FIXED */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="text-lg font-semibold text-white">Destinataires Alertes</h3>
+            <p className="text-xs text-slate-400">
+              {alertEmails && alertEmails.length > 0 ? (
+                <>
+                  Principal: <span className="text-cyan-300 font-medium">{alertEmails[0]}</span>
+                </>
+              ) : (
+                "—"
+              )}
+            </p>
+          </div>
+          <button
+            onClick={() =>
+              sendAlertEmail({
+                title: "Test alerte",
+                message: "Ceci est un test d'envoi d'alerte.",
+                suggestion: "Vérifiez la configuration de Resend.",
+              })
+            }
+            className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm hover:bg-emerald-500 transition-colors"
+          >
+            Envoyer un test
+          </button>
+        </div>
+
+        <div className="flex gap-2 mb-3">
+          <input
+            className="flex-1 rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            placeholder="email@exemple.com"
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          />
+          <button
+            onClick={handleAdd}
+            disabled={!emailInput.trim()}
+            className="px-3 py-2 rounded-lg bg-cyan-600 text-white text-sm hover:bg-cyan-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Ajouter
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {alertEmails && alertEmails.length > 0 ? (
+            alertEmails.map((email, idx) => (
+              <span
+                key={email}
+                className={`flex items-center gap-2 bg-slate-800 border border-slate-700 text-slate-100 text-xs px-2 py-1 rounded-lg ${
+                  idx === 0 ? "ring-1 ring-cyan-500/50" : ""
+                }`}
+              >
+                <span>{email}</span>
+                <button
+                  onClick={() => setPrimaryAlertEmail(email)}
+                  className={`text-slate-400 hover:text-cyan-400 transition-colors ${
+                    idx === 0 ? "cursor-default opacity-60" : ""
+                  }`}
+                  aria-label={`Définir ${email} comme principal`}
+                  disabled={idx === 0}
+                  title={idx === 0 ? "Déjà principal" : "Définir comme principal"}
+                >
+                  <Star className={`w-3 h-3 ${idx === 0 ? "fill-cyan-400 text-cyan-400" : ""}`} />
+                </button>
+                <button
+                  onClick={() => removeAlertEmail(email)}
+                  className="text-slate-400 hover:text-red-400 transition-colors"
+                  aria-label={`Supprimer ${email}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))
+          ) : (
+            <span className="text-xs text-slate-500">Aucun destinataire configuré</span>
+          )}
+        </div>
+      </div>
+
       {/* Alert Cards */}
       <div className="space-y-4">
         {filteredAlerts.length === 0 ? (
@@ -390,6 +654,41 @@ export function AlertsPanel() {
                         <p className="text-xs font-semibold text-yellow-400 mb-1">Impact</p>
                         <p className="text-sm text-yellow-300">{alert.impact}</p>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Suggestions Section */}
+                {alert.aiSuggestions && alert.aiSuggestions.length > 0 && (
+                  <div className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30 rounded-lg p-4 mb-4 ml-8">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Brain className="w-5 h-5 text-purple-400" />
+                      <h5 className="font-semibold text-purple-300">Suggestions IA pour Résoudre</h5>
+                    </div>
+                    <div className="space-y-3">
+                      {alert.aiSuggestions.map((suggestion, idx) => (
+                        <div key={idx} className={`border rounded-lg p-3 ${getPriorityColor(suggestion.priority)}`}>
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <p className="font-semibold text-sm mb-1">{suggestion.title}</p>
+                              {getPriorityBadge(suggestion.priority)}
+                            </div>
+                          </div>
+                          <p className="text-xs opacity-90 mb-3">{suggestion.description}</p>
+                          {suggestion.action && (
+                            <Button
+                              size="sm"
+                              className="bg-purple-500 hover:bg-purple-600 text-white text-xs h-7"
+                              onClick={() => {
+                                // Handle action
+                                console.log(`Action: ${suggestion.action} - ${suggestion.title}`)
+                              }}
+                            >
+                              {suggestion.action}
+                            </Button>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

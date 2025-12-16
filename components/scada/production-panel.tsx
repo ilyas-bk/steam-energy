@@ -22,59 +22,15 @@ export function ProductionPanel() {
   const [autoMode, setAutoMode] = useState(true)
   const [units, setUnits] = useState<UnitControl[]>([
     { 
-      id: "U", 
-      name: "CAP U", 
-      type: "Unité de Captation",
+      id: "elec", 
+      name: "Énergie Électrique", 
+      type: "Production Principale",
       status: "running", 
-      power: 12.5, 
-      charge: 87,
+      power: 42.5, 
+      charge: 72,
       consommation: 95,
       temperature: 425,
       pression: 8.2
-    },
-    { 
-      id: "V", 
-      name: "CAP V", 
-      type: "Unité de Captation",
-      status: "running", 
-      power: 11.8, 
-      charge: 82,
-      consommation: 93,
-      temperature: 418,
-      pression: 8.0
-    },
-    { 
-      id: "W", 
-      name: "CAP W", 
-      type: "Unité de Captation",
-      status: "paused", 
-      power: 0, 
-      charge: 0,
-      consommation: 0,
-      temperature: 185,
-      pression: 2.1
-    },
-    { 
-      id: "central", 
-      name: "Centrale Thermique", 
-      type: "Production Vapeur",
-      status: "running", 
-      power: 45.8, 
-      charge: 91,
-      consommation: 94,
-      temperature: 520,
-      pression: 12.5
-    },
-    { 
-      id: "sulfuric", 
-      name: "Unité Sulfurique", 
-      type: "Traitement Chimique",
-      status: "running", 
-      power: 8.2, 
-      charge: 76,
-      consommation: 91,
-      temperature: 380,
-      pression: 6.8
     },
     { 
       id: "ted", 
@@ -98,11 +54,11 @@ export function ProductionPanel() {
               return { 
                 ...unit, 
                 status: "running", 
-                power: unit.id === "central" ? 45 : unit.id.startsWith("CAP") ? 12 : 8,
+                power: unit.id === "elec" ? 42.5 : 2.5,
                 charge: 75 + Math.random() * 20,
                 consommation: 85 + Math.random() * 15,
-                temperature: unit.id === "central" ? 520 : unit.id.startsWith("CAP") ? 420 : 300,
-                pression: unit.id === "central" ? 12 : unit.id.startsWith("CAP") ? 8 : 5
+                temperature: unit.id === "elec" ? 425 : 300,
+                pression: unit.id === "elec" ? 8 : 5
               }
             case "pause":
               return { ...unit, status: "paused", power: 0, charge: 0, consommation: 0 }
@@ -141,15 +97,16 @@ export function ProductionPanel() {
     setUnits((prev) => prev.map((unit) => ({
       ...unit,
       status: "running",
-      power: unit.id === "central" ? 45 : unit.id.startsWith("CAP") ? 12 : 8,
+      power: unit.id === "elec" ? 42.5 : 2.5,
       charge: 75 + Math.random() * 20,
       consommation: 85 + Math.random() * 15,
-      temperature: unit.id === "central" ? 520 : unit.id.startsWith("CAP") ? 420 : 300,
-      pression: unit.id === "central" ? 12 : unit.id.startsWith("CAP") ? 8 : 5
+      temperature: unit.id === "elec" ? 425 : 300,
+      pression: unit.id === "elec" ? 8 : 5
     })))
   }
 
   const activeUnits = units.filter(u => u.status === "running").length
+  const totalProduction = units.filter(u => u.status === "running").reduce((sum, u) => sum + u.power, 0)
   const averageCharge = units.filter(u => u.status === "running").reduce((sum, u) => sum + u.charge, 0) / (activeUnits || 1)
 
   const getStatusBadge = (status: string) => {
@@ -195,11 +152,22 @@ export function ProductionPanel() {
               <p className="text-slate-400 text-sm">Unités Actives</p>
               <Activity className="w-5 h-5 text-blue-400" />
             </div>
-            <p className="text-4xl font-bold text-blue-400">{activeUnits}<span className="text-xl text-slate-400">/6</span></p>
+            <p className="text-4xl font-bold text-blue-400">{activeUnits}<span className="text-xl text-slate-400">/2</span></p>
             <div className="flex items-center gap-1 mt-2">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <p className="text-xs text-slate-400">{activeUnits} unités opérationnelles</p>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-yellow-900/20 to-slate-900 border-2 border-yellow-500/30 shadow-lg shadow-yellow-500/10">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-slate-400 text-sm">Production Totale</p>
+              <Zap className="w-5 h-5 text-yellow-400" />
+            </div>
+            <p className="text-4xl font-bold text-yellow-400">{totalProduction.toFixed(1)}<span className="text-xl text-slate-400"> MW</span></p>
+            <p className="text-xs text-yellow-400 mt-2">Puissance générée</p>
           </CardContent>
         </Card>
 
@@ -211,26 +179,6 @@ export function ProductionPanel() {
             </div>
             <p className="text-4xl font-bold text-emerald-400">{averageCharge.toFixed(0)}%</p>
             <p className="text-xs text-emerald-400 mt-2">Utilisation globale</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-purple-900/20 to-slate-900 border-2 border-purple-500/30 shadow-lg shadow-purple-500/10">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-slate-400 text-sm">Mode Automatique</p>
-              <Zap className="w-5 h-5 text-purple-400" />
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-              <Button
-                size="sm"
-                variant={autoMode ? "default" : "outline"}
-                className={autoMode ? "bg-purple-500 hover:bg-purple-600" : ""}
-                onClick={() => setAutoMode(!autoMode)}
-              >
-                {autoMode ? "IA Activée" : "Manuel"}
-              </Button>
-            </div>
-            <p className="text-xs text-purple-400 mt-2">{autoMode ? "Contrôle intelligent" : "Contrôle manuel"}</p>
           </CardContent>
         </Card>
 
@@ -262,7 +210,7 @@ export function ProductionPanel() {
         </Card>
       </div>
 
-      {/* Unit Details - Enhanced Rows */}
+      {/* Unit Details */}
       <div className="space-y-4">
         {units.map((unit) => (
           <Card 
@@ -288,7 +236,7 @@ export function ProductionPanel() {
               </div>
 
               {/* Metrics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                 {/* Charge with Progress Bar */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">

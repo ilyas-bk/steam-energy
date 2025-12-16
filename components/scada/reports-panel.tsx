@@ -5,58 +5,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { FileText, Download, Calendar, TrendingUp, TrendingDown, Droplets, Leaf, Brain, DollarSign, BarChart3, FileSpreadsheet, FileDown } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
+import { useDashboard } from "@/context/dashboard-context"
 
 export function ReportsPanel() {
-  const reports = [
-    { 
-      name: "Rapport Performance Globale", 
-      category: "Performance Globale",
-      type: "performance", 
-      date: "11/12/2025", 
-      size: "2.4 MB",
-      color: "cyan"
-    },
-    { 
-      name: "Intelligence Artificielle - Décembre", 
-      category: "Intelligence Artificielle",
-      type: "ai", 
-      date: "10/12/2025", 
-      size: "5.8 MB",
-      color: "purple"
-    },
-    { 
-      name: "Analyse Énergétique Mensuelle", 
-      category: "Énergie",
-      type: "energy", 
-      date: "10/12/2025", 
-      size: "5.2 MB",
-      color: "amber"
-    },
-    { 
-      name: "Audit Ressources Hydrauliques", 
-      category: "Ressources Hydrauliques",
-      type: "water", 
-      date: "08/12/2025", 
-      size: "3.8 MB",
-      color: "blue"
-    },
-    { 
-      name: "Rapport Hebdomadaire Opérations", 
-      category: "Performance Globale",
-      type: "weekly", 
-      date: "08/12/2025", 
-      size: "8.1 MB",
-      color: "cyan"
-    },
-    { 
-      name: "Bilan Mensuel Novembre", 
-      category: "Performance Globale",
-      type: "monthly", 
-      date: "01/12/2025", 
-      size: "24.5 MB",
-      color: "cyan"
-    },
-  ]
+  const { reports } = useDashboard()
 
   const trendData = [
     { month: "Juil", economies: 68500, couts: 3200000 },
@@ -67,14 +19,23 @@ export function ReportsPanel() {
     { month: "Déc", economies: 105000, couts: 2950000 },
   ]
 
-  const getCategoryBadge = (category: string, color: string) => {
+  const getCategoryBadge = (category: string) => {
     const colorClasses: Record<string, string> = {
-      cyan: "bg-cyan-500/20 text-cyan-400 border-cyan-500/50",
-      purple: "bg-purple-500/20 text-purple-400 border-purple-500/50",
-      amber: "bg-amber-500/20 text-amber-400 border-amber-500/50",
-      blue: "bg-blue-500/20 text-blue-400 border-blue-500/50",
+      "Performance Globale": "bg-cyan-500/20 text-cyan-400 border-cyan-500/50",
+      "Intelligence Artificielle": "bg-purple-500/20 text-purple-400 border-purple-500/50",
+      "Énergie": "bg-amber-500/20 text-amber-400 border-amber-500/50",
+      "Ressources Hydrauliques": "bg-blue-500/20 text-blue-400 border-blue-500/50",
+      "Centrale Thermique": "bg-orange-500/20 text-orange-400 border-orange-500/50",
+      "Unité Sulfurique": "bg-red-500/20 text-red-400 border-red-500/50",
+      "TED": "bg-green-500/20 text-green-400 border-green-500/50",
+      "CAP": "bg-indigo-500/20 text-indigo-400 border-indigo-500/50",
     }
-    return <Badge className={colorClasses[color] || colorClasses.cyan}>{category}</Badge>
+    return <Badge className={colorClasses[category] || colorClasses["Performance Globale"]}>{category}</Badge>
+  }
+
+  const handleDownload = (reportId: string, format: "pdf" | "excel") => {
+    console.log(`Downloading report ${reportId} as ${format}`)
+    // TODO: Implement actual download logic
   }
 
   return (
@@ -231,17 +192,17 @@ export function ReportsPanel() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {reports.map((report, index) => (
+            {reports.map((report) => (
               <div 
-                key={index} 
+                key={report.id} 
                 className="flex items-center justify-between p-4 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
               >
                 <div className="flex items-center gap-4 flex-1">
                   <FileText className="w-5 h-5 text-cyan-400" />
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
-                      <p className="font-semibold text-white">{report.name}</p>
-                      {getCategoryBadge(report.category, report.color)}
+                      <p className="font-semibold text-white">{report.title}</p>
+                      {getCategoryBadge(report.category)}
                     </div>
                     <p className="text-xs text-slate-400">
                       {report.date} • {report.size}
@@ -251,6 +212,7 @@ export function ReportsPanel() {
                 <div className="flex gap-2">
                   <Button 
                     size="sm" 
+                    onClick={() => handleDownload(report.id, "pdf")}
                     className="bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30"
                   >
                     <Download className="w-4 h-4 mr-1" />
@@ -258,6 +220,7 @@ export function ReportsPanel() {
                   </Button>
                   <Button 
                     size="sm" 
+                    onClick={() => handleDownload(report.id, "excel")}
                     className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-500/30"
                   >
                     <Download className="w-4 h-4 mr-1" />

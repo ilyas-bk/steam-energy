@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import { DashboardProvider } from "@/context/dashboard-context"
 import { Sidebar } from "./scada/sidebar"
 import { Header } from "./scada/header"
+import { NotificationCenter } from "./scada/notification-center"
 import { OverviewPanel } from "./scada/overview-panel"
 import { EnergyPanel } from "./scada/energy-panel"
 import { WaterPanel } from "./scada/water-panel"
@@ -53,12 +55,15 @@ export function ScadaDashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-auto p-6">{renderPanel()}</main>
+    <DashboardProvider>
+      <div className="flex h-screen bg-slate-950 text-slate-100">
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <NotificationCenter onNavigateToAlerts={() => setActiveTab("alerts")} />
+          <main className="flex-1 overflow-auto p-6">{renderPanel()}</main>
+        </div>
       </div>
-    </div>
+    </DashboardProvider>
   )
 }

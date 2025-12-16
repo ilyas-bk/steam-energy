@@ -52,6 +52,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
           return (
             <button
               key={item.id}
+              data-tab={item.id}
               onClick={() => setActiveTab(item.id as TabType)}
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all",

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useDashboard } from "@/context/dashboard-context"
 
 interface SchemaData {
   capU: { charge: number; puissance: number; pH: number; cond: number; flow: number }
@@ -29,6 +30,7 @@ interface SchemaData {
 }
 
 export function ProcessSchema() {
+  const { setAnomalyActive } = useDashboard()
   const [data, setData] = useState<SchemaData>({
     capU: { charge: 118.5, puissance: 11.85, pH: 6.9, cond: 450, flow: 63.1 },
     capV: { charge: 113.6, puissance: 11.36, pH: 7.0, cond: 485, flow: 56.6 },
@@ -46,15 +48,31 @@ export function ProcessSchema() {
     }
   })
 
+  const [anomalyMode, setAnomalyMode] = useState<"none" | "uncomfortable-steam" | "water-leak">("none")
+
+  // Force statut: set to "EXPORTATION", "IMPORTATION" or null to keep automatic mode
+  const FORCE_STATUT: "EXPORTATION" | "IMPORTATION" | null = "IMPORTATION"
+
   useEffect(() => {
     const interval = setInterval(() => {
       setData(prev => {
         const newPuissance = prev.centrale.puissance + (Math.random() - 0.5) * 0.5
         const energieNecessaire = prev.capU.puissance + prev.capV.puissance + prev.capW.puissance + 4.2
-        const bilanNet = newPuissance - energieNecessaire
-        const statut = bilanNet > 0 ? "EXPORTATION" : bilanNet < -2 ? "IMPORTATION" : "ÉQUILIBRE"
-        
-        return {
+        let bilanNet = newPuissance - energieNecessaire
+        let statut = bilanNet > 0 ? "EXPORTATION" : bilanNet < -2 ? "IMPORTATION" : "ÉQUILIBRE"
+
+        // Override statut if forcing mode
+        if (FORCE_STATUT === "EXPORTATION") {
+          statut = "EXPORTATION"
+          // Ensure positive export with a minimum visibility value
+          bilanNet = Math.max(bilanNet, 0.5)
+        } else if (FORCE_STATUT === "IMPORTATION") {
+          statut = "IMPORTATION"
+          // Ensure positive import with a minimum visibility value
+          bilanNet = -Math.max(Math.abs(bilanNet), 0.5)
+        }
+
+        let newData = {
           capU: { ...prev.capU, charge: prev.capU.charge + (Math.random() - 0.5) * 2 },
           capV: { ...prev.capV, charge: prev.capV.charge + (Math.random() - 0.5) * 2 },
           capW: { ...prev.capW, charge: prev.capW.charge + (Math.random() - 0.5) * 2 },
@@ -67,13 +85,31 @@ export function ProcessSchema() {
             energieExportee: bilanNet > 0 ? bilanNet : 0,
             energieImportee: bilanNet < 0 ? Math.abs(bilanNet) : 0,
             bilanNet,
-            statut
+            statut,
+          },
+        }
+
+        // Apply anomaly simulations
+        if (anomalyMode === "uncomfortable-steam") {
+          // Simulate uncomfortable steam: vapor flow significantly different from condensate return
+          const vaporFlow = prev.capU.flow + prev.capV.flow + prev.capW.flow
+          newData.centrale = {
+            ...newData.centrale,
+            retourDebit: vaporFlow * 0.65 // 35% difference (uncomfortable)
+          }
+        } else if (anomalyMode === "water-leak") {
+          // Simulate water leak: return water less than input water
+          newData.ted = {
+            ...newData.ted,
+            debitSortie: newData.ted.debitEntree * 0.70 // 30% loss (leak)
           }
         }
+
+        return newData
       })
     }, 2000)
     return () => clearInterval(interval)
-  }, [])
+  }, [anomalyMode])
 
   return (
     <div className="space-y-6">
@@ -82,6 +118,53 @@ export function ProcessSchema() {
         <p className="relative text-slate-300 mt-2 text-lg font-medium">Diagramme détaillé avec valeurs en temps réel</p>
       </div>
 
+      {/* Anomaly Testing Controls */}
+      <div className="relative bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+        <h3 className="text-lg font-semibold text-cyan-400 mb-3">🧪 Tests d'Anomalies</h3>
+        <div className="flex gap-3 flex-wrap">
+          <button
+            onClick={() => {
+              setAnomalyMode("none")
+              setAnomalyActive("none")
+            }}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              anomalyMode === "none"
+                ? "bg-green-600 text-white shadow-lg shadow-green-500/30"
+                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+            }`}
+          >
+            ✓ Normal
+          </button>
+          <button
+            onClick={() => {
+              setAnomalyMode("uncomfortable-steam")
+              setAnomalyActive("uncomfortable-steam")
+            }}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              anomalyMode === "uncomfortable-steam"
+                ? "bg-orange-600 text-white shadow-lg shadow-orange-500/30"
+                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+            }`}
+          >
+            ⚠️ Vapeur Inconfortable
+          </button>
+          <button
+            onClick={() => {
+              setAnomalyMode("water-leak")
+              setAnomalyActive("water-leak")
+            }}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              anomalyMode === "water-leak"
+                ? "bg-red-600 text-white shadow-lg shadow-red-500/30"
+                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+            }`}
+          >
+            💧 Fuite d'Eau
+          </button>
+        </div>
+      </div>
+
+      {/* SVG Schema */}
       <div className="relative bg-slate-950 rounded-2xl p-6 border border-slate-800/60">
         <svg className="w-full" style={{ minHeight: 700 }} viewBox="0 0 1400 700" preserveAspectRatio="xMidYMid meet">
           <defs>
@@ -110,7 +193,7 @@ export function ProcessSchema() {
               .pipe-elec-import { stroke: #fbbf24; stroke-width: 3; fill: none; }
               .sensor-dot { fill: #06b6d4; }
               .counter-box { fill: rgba(71,85,105,0.3); stroke: #475569; stroke-width: 1.5; }
-              .status-export { fill: #10b981; }
+              .status-export { fill: #22d3ee; }
               .status-import { fill: #fbbf24; }
               .status-balance { fill: #64748b; }
             `}</style>
@@ -261,7 +344,7 @@ export function ProcessSchema() {
               "status-balance"
             } 
           />
-          <text x="1220" y="222" textAnchor="middle" className="value-small" fill="#0f172a">{data.echangeElec.statut}</text>
+          <text x="1220" y="222" textAnchor="middle" className="value-small" fill="#ffffff" fontWeight="700">{data.echangeElec.statut}</text>
           
           <text x="1070" y="245" className="value-small" fill={data.echangeElec.bilanNet > 0 ? "#10b981" : "#64748b"}>
             Énergie utilisable: {data.echangeElec.bilanNet > 0 ? "OUI ✓" : "NON ✗"}
