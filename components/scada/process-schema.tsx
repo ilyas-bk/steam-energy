@@ -37,15 +37,15 @@ export function ProcessSchema() {
     capU: { charge: 118.5, puissance: 11.85, pH: 6.9, cond: 450, flow: 63.1 },
     capV: { charge: 113.6, puissance: 11.36, pH: 7.0, cond: 485, flow: 56.6 },
     capW: { charge: 113.4, puissance: 11.34, pH: 6.7, cond: 467, flow: 61.4 },
-    centrale: { charge: 91, puissance: 45.68, efficacite: 93.8, temp: 417.19, retourPH: 7.4, retourCond: 520, retourDebit: 210, retourTemp: 85 },
-    sulfurique: { charge: 83, temp: 410, vhpExport: 46, vhpTemp: 410, vbpExport: 32, vbpTemp: 175 },
+    centrale: { charge: 91, puissance: 65.68, efficacite: 93.8, temp: 482.4, retourPH: 7.4, retourCond: 520, retourDebit: 210, retourTemp: 85 },
+    sulfurique: { charge: 83, temp: 410, vhpExport: 46, vhpTemp: 482.4, vbpExport: 32, vbpTemp: 175 },
     ted: { charge: 86, debitEntree: 680, debitSortie: 340, stockActuel: 15125, prevision24h: 14097, tauxRecyclage: 92 },
     echangeElec: {
       energieNecessaire: 38.5,
-      energieProduite: 45.68,
-      energieExportee: 7.18,
+      energieProduite: 65.68,
+      energieExportee: 27.18,
       energieImportee: 0,
-      bilanNet: 7.18,
+      bilanNet: 27.18,
       statut: "EXPORTATION"
     }
   })
@@ -61,6 +61,10 @@ export function ProcessSchema() {
         const newPuissance = prev.centrale.puissance + (Math.random() - 0.5) * 0.5
         const energieNecessaire = prev.capU.puissance + prev.capV.puissance + prev.capW.puissance + 4.2
         let bilanNet = newPuissance - energieNecessaire
+        // Ensure export stays above 20 MW
+        if (bilanNet < 22) {
+          bilanNet = 22 + Math.random() * 5
+        }
         let statut: StatutType = bilanNet > 0 ? "EXPORTATION" : bilanNet < -2 ? "IMPORTATION" : "ÉQUILIBRE"
 
         // Override statut if forcing mode
@@ -81,9 +85,13 @@ export function ProcessSchema() {
           centrale: {
             ...prev.centrale,
             puissance: newPuissance,
-            temp: Number(prev.centrale.temp.toFixed(2)), // clamp to 2 decimals
+            temp: Math.max(480, Math.min(495, prev.sulfurique.vhpTemp + (Math.random() - 0.5) * 1.5)),
           },
-          sulfurique: { ...prev.sulfurique, temp: prev.sulfurique.temp + (Math.random() - 0.5) * 1 },
+          sulfurique: {
+            ...prev.sulfurique,
+            temp: prev.sulfurique.temp + (Math.random() - 0.5) * 1,
+            vhpTemp: Math.max(480, Math.min(495, prev.sulfurique.vhpTemp + (Math.random() - 0.5) * 1.5)),
+          },
           ted: { ...prev.ted, debitEntree: prev.ted.debitEntree + (Math.random() - 0.5) * 10 },
           echangeElec: {
             energieNecessaire,
@@ -116,6 +124,10 @@ export function ProcessSchema() {
     }, 2000)
     return () => clearInterval(interval)
   }, [anomalyMode])
+
+  const isExport = data.echangeElec.statut === "EXPORTATION"
+  const exportMad = Math.min(19.5, Math.abs(data.echangeElec.bilanNet))
+  const importMad = Math.max(105, Math.abs(data.echangeElec.bilanNet) + 80)
 
   return (
     <div className="space-y-6">
@@ -152,7 +164,7 @@ export function ProcessSchema() {
                 : "bg-slate-800 text-slate-300 hover:bg-slate-700"
             }`}
           >
-            ⚠️ Vapeur Inconfortable
+            ⚠️ Vapeur Non Conforme
           </button>
           <button
             onClick={() => {
@@ -217,6 +229,11 @@ export function ProcessSchema() {
           <circle cx="700" cy="60" r="5" className="sensor-dot" />
           <circle cx="1000" cy="60" r="5" className="sensor-dot" />
 
+          {/* Condensat drops to CAP units */}
+          <path d="M 220 60 V 100" className="pipe" markerEnd="url(#arrow)" />
+          <path d="M 470 60 V 100" className="pipe" markerEnd="url(#arrow)" />
+          <path d="M 720 60 V 100" className="pipe" markerEnd="url(#arrow)" />
+
           {/* CAP U */}
           <rect x="120" y="100" width="200" height="140" rx="8" className="unit-box" />
           <text x="220" y="125" textAnchor="middle" className="unit-title">CAP U</text>
@@ -264,6 +281,9 @@ export function ProcessSchema() {
           <text x="440" y="300" className="value-small">Vapeur BP</text>
           <circle cx="470" cy="310" r="5" className="sensor-dot" />
 
+          {/* Vapeur BP vers Centrale */}
+          <path d="M 470 310 V 350 H 400" className="pipe-vapor" markerEnd="url(#arrowOrange)" />
+
           {/* CENTRALE THERMIQUE */}
           <rect x="400" y="350" width="280" height="200" rx="10" className="unit-box" />
           <text x="540" y="380" textAnchor="middle" className="unit-title">CENTRALE THERMIQUE</text>
@@ -273,8 +293,8 @@ export function ProcessSchema() {
           <text x="640" y="435" textAnchor="end" className="value-big">{data.centrale.puissance.toFixed(2)} MW</text>
           <text x="420" y="460" className="label">Efficacité IA:</text>
           <text x="640" y="460" textAnchor="end" className="value-med">{data.centrale.efficacite.toFixed(1)}%</text>
-          <text x="420" y="485" className="label">Température:</text>
-          <text x="640" y="485" textAnchor="end" className="value-med">{data.centrale.temp.toFixed(2)}°C</text>
+          <text x="420" y="485" className="label">Température VHP:</text>
+          <text x="640" y="485" textAnchor="end" className="value-med">{data.sulfurique.vhpTemp.toFixed(2)}°C</text>
           <text x="420" y="510" className="label">Retour Condensat - Sulfurique:</text>
           <text x="420" y="528" className="value-small">pH: {data.centrale.retourPH}</text>
           <text x="490" y="528" className="value-small">Cond: {data.centrale.retourCond}</text>
@@ -302,13 +322,13 @@ export function ProcessSchema() {
           <text x="1020" y="420" className="label">Charge:</text>
           <text x="1220" y="420" textAnchor="end" className="value-big">{data.sulfurique.charge}%</text>
           <text x="1020" y="445" className="label">Température:</text>
-          <text x="1220" y="445" textAnchor="end" className="value-med">{data.sulfurique.temp}°C</text>
+          <text x="1220" y="445" textAnchor="end" className="value-med">{data.sulfurique.temp.toFixed(2)}°C</text>
           <text x="1020" y="475" className="label">Export Vapeur:</text>
-          <text x="1020" y="493" className="value-small">VHP: {data.sulfurique.vhpExport} T/h ({data.sulfurique.vhpTemp}°C)</text>
-          <text x="1020" y="508" className="value-small">VBP: {data.sulfurique.vbpExport} T/h ({data.sulfurique.vbpTemp}°C)</text>
+          <text x="1020" y="493" className="value-small">VHP: {data.sulfurique.vhpExport} T/h ({data.sulfurique.vhpTemp.toFixed(2)}°C)</text>
+          <text x="1020" y="508" className="value-small">VBP: {data.sulfurique.vbpExport} T/h ({data.sulfurique.vbpTemp.toFixed(2)}°C)</text>
 
           {/* Retour condensat from Sulfurique */}
-          <path d="M 1000 480 H 720 V 580 H 240" className="pipe" markerEnd="url(#arrow)" />
+          <path d="M 1000 480 H 720 V 580 H 180 V 620 H 80" className="pipe" markerEnd="url(#arrow)" />
           <text x="700" y="570" className="value-small">Retour condensat</text>
           <circle cx="850" cy="480" r="5" className="sensor-dot" />
 
@@ -331,14 +351,30 @@ export function ProcessSchema() {
           <rect x="1050" y="80" width="280" height="180" rx="10" className="unit-box" />
           <text x="1190" y="110" textAnchor="middle" className="unit-title">ÉCHANGE ÉLECTRIQUE</text>
           
-          <text x="1070" y="140" className="label">Énergie nécessaire:</text>
-          <text x="1300" y="140" textAnchor="end" className="value-med">{data.echangeElec.energieNecessaire.toFixed(2)} MW</text>
+          <text x="1070" y="145" className="label">Export:</text>
+          <text
+            x="1300"
+            y="145"
+            textAnchor="end"
+            className="value-big"
+            fill="#10b981"
+          >
+            +{exportMad.toFixed(2)} MAD
+          </text>
+
+          <text x="1070" y="170" className="label">Import:</text>
+          <text
+            x="1300"
+            y="170"
+            textAnchor="end"
+            className="value-big"
+            fill="#f87171"
+          >
+            -{importMad.toFixed(2)} MAD
+          </text>
           
-          <text x="1070" y="165" className="label">Énergie produite:</text>
-          <text x="1300" y="165" textAnchor="end" className="value-med">{data.echangeElec.energieProduite.toFixed(2)} MW</text>
-          
-          <text x="1070" y="190" className="label">Bilan net:</text>
-          <text x="1300" y="190" textAnchor="end" className="value-big" fill={data.echangeElec.bilanNet > 0 ? "#10b981" : data.echangeElec.bilanNet < -1 ? "#fbbf24" : "#94a3b8"}>
+          <text x="1070" y="200" className="label">Bilan net:</text>
+          <text x="1300" y="200" textAnchor="end" className="value-big" fill={data.echangeElec.bilanNet > 0 ? "#10b981" : data.echangeElec.bilanNet < -1 ? "#fbbf24" : "#94a3b8"}>
             {data.echangeElec.bilanNet > 0 ? "+" : ""}{data.echangeElec.bilanNet.toFixed(2)} MW
           </text>
           
@@ -363,7 +399,7 @@ export function ProcessSchema() {
 
           {/* Échange Électrique vers Centrale (import) */}
           <path 
-            d="M 1190 260 V 340 H 680" 
+            d="M 1190 260 V 340 H 680 V 370" 
             className={data.echangeElec.energieImportee > 0 ? "pipe-elec-import" : "pipe"} 
             markerEnd={data.echangeElec.energieImportee > 0 ? "url(#arrowYellow)" : "url(#arrow)"}
             strokeDasharray={data.echangeElec.energieImportee > 0 ? "0" : "5,5"}

@@ -172,7 +172,7 @@ export function AnalyticsPanel() {
         {/* Predictions Line Chart (2/3 width) */}
         <Card className="lg:col-span-2 bg-slate-800/40 border-slate-700/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-base text-white flex items-center gap-2">
               <Brain className="w-4 h-4 text-cyan-400" />
               Prédictions Énergétique - Réel vs IA
             </CardTitle>
@@ -203,7 +203,7 @@ export function AnalyticsPanel() {
         {/* Radar Chart (1/3 width) */}
         <Card className="bg-slate-800/40 border-slate-700/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-base text-white flex items-center gap-2">
               <Target className="w-4 h-4 text-violet-400" />
               Performance IA par Domaine
             </CardTitle>

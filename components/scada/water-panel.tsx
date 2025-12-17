@@ -200,8 +200,8 @@ export function WaterPanel() {
                   <XAxis dataKey="time" stroke="#94a3b8" />
                   <YAxis stroke="#94a3b8" />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155" }}
-                    labelStyle={{ color: "#fff" }}
+                    contentStyle={{ backgroundColor: "#0ea5e9", border: "1px solid #38bdf8", color: "#0b1727" }}
+                    labelStyle={{ color: "#0b1727", fontWeight: 700 }}
                   />
                   <Legend />
                   <Line 
@@ -242,8 +242,8 @@ export function WaterPanel() {
                   <XAxis dataKey="parameter" stroke="#94a3b8" />
                   <YAxis stroke="#94a3b8" domain={[80, 100]} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155" }}
-                    labelStyle={{ color: "#fff" }}
+                    contentStyle={{ backgroundColor: "#0ea5e9", border: "1px solid #38bdf8", color: "#0b1727" }}
+                    labelStyle={{ color: "#0b1727", fontWeight: 700 }}
                   />
                   <Bar dataKey="value" name="Qualité">
                     {qualityData.map((entry, index) => (

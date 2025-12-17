@@ -232,7 +232,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       }
 
       if (anomaly === "uncomfortable-steam") {
-        const title = "⚠️ Anomalie détectée: Vapeur Inconfortable"
+        const title = "⚠️ Anomalie détectée: Vapeur Non Conforme"
         const message = `Écart critique détecté entre vapeur et retour condensat. Décalage: 35%.
         
 Détails:
